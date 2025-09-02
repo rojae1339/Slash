@@ -51,10 +51,16 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void CreateFields(const FVector& FieldLocation);
 
+	void ExecuteGetHit(FHitResult& BoxHit);
+	//ok
+	/**
+	 * 
+	 */
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	TObjectPtr<USoundBase> EquipSound;
-
+	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	TObjectPtr<class UBoxComponent> WeaponBox;
 

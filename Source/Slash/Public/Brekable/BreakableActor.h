@@ -21,8 +21,15 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<UGeometryCollectionComponent> GeometryCollection;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UCapsuleComponent> Capsule;
 
 private:
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UGeometryCollectionComponent> GeometryCollection;
+	
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ATreasure> TreasureClass;
 };
