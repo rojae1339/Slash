@@ -58,6 +58,9 @@ protected:
 	UFUNCTION(BlueprintPure)
 	float TransformedCos() const;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class UNiagaraComponent> EmbersEffect;
+
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	float RunningTime;

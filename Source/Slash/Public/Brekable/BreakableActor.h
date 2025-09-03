@@ -28,8 +28,8 @@ protected:
 	TObjectPtr<class UCapsuleComponent> Capsule;
 
 private:
-	
+	UPROPERTY(EditAnywhere, Category="Breakable Properties")
+	TArray<TSubclassOf<class ATreasure>> TreasureClasses;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ATreasure> TreasureClass;
+	bool bAlreadyHit = false;
 };
