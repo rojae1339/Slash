@@ -13,16 +13,22 @@ class SLASH_API UAttributeComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UAttributeComponent();
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	//Current health
+	UPROPERTY(EditAnywhere, Category="Actor Attributes")
+	float Health;
+	UPROPERTY(EditAnywhere, Category="Actor Attributes")
+	float MaxHealth;
+	
+public:
+	void ReceiveDamage(float Damage);
+	float GetHealthPercent() const;
+	bool IsAlive() const;
 };

@@ -45,8 +45,11 @@ void AWeapon::AttachMeshToSocket(USceneComponent* InParent, FName InSocketName)
 	ItemMesh->AttachToComponent(InParent, TransformRules, InSocketName);
 }
 
-void AWeapon::Equip(USceneComponent* InParent, FName InSocketName)
+void AWeapon::Equip(USceneComponent* InParent, FName InSocketName, /*add*/ AActor* NewOwner, APawn* NewInstigator)
 {
+	SetOwner(NewOwner);
+	SetInstigator(NewInstigator);
+	
 	AttachMeshToSocket(InParent, InSocketName);
 	ItemState = EItemState::EIS_Equipped;
 
@@ -108,10 +111,18 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent,
 	
 	FHitResult BoxHit;
 
-	UKismetSystemLibrary::BoxTraceSingle(this, Start, End,FVector(10, 25, 10),BoxTraceStart->GetComponentRotation(),TraceTypeQuery1,false,ActorsToIgnore,EDrawDebugTrace::None,BoxHit,true);
+	UKismetSystemLibrary::BoxTraceSingle(this, Start, End,FVector(10,50, 45),BoxTraceStart->GetComponentRotation(),TraceTypeQuery1,false,ActorsToIgnore,EDrawDebugTrace::None,BoxHit,true);
 
 	if (AActor* HitActor = BoxHit.GetActor())
 	{
+		UGameplayStatics::ApplyDamage(
+			HitActor,
+			Damage,
+			GetInstigator()->GetController(),
+			this,
+			UDamageType::StaticClass()
+		);
+		
 		if (IHitInterface* HitInterface = Cast<IHitInterface>(HitActor))
 		{
 			//HitInterface->GetHit(BoxHit.ImpactPoint);

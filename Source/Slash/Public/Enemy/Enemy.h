@@ -3,9 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Characters/CharacterType.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/HitInterface.h"
 #include "Enemy.generated.h"
+
+enum class EDeathPose : uint8;
 
 UCLASS()
 class SLASH_API AEnemy : public ACharacter, public IHitInterface
@@ -20,20 +23,41 @@ public:
 
 	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
 
+	virtual float TakeDamage(float Damage,
+		const FDamageEvent& DamageEvent,
+		AController* EventInstigator,
+		AActor* DamageCauser) override;
+
 protected:
 	virtual void BeginPlay() override;
+
+	FTimerHandle BeginPatrolTimer;
+	void BeginPatrolling();
+
+	void Die();
 
 	/**
 	 * Play Montage Methods
 	 */
 	void PlayHitReactMontage(const FName SectionName);
+	bool InTargetRange(AActor* Target, double Radius);
+
+	UPROPERTY(BlueprintReadOnly)
+	EDeathPose DeathPose = EDeathPose::EDP_Alive;
 
 private:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UAttributeComponent> Attributes;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UHealthBarComponent> HealthBarWidget;
+	
 	/**
 	 * Animation Montages
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	TObjectPtr<UAnimMontage> HitReactMontage;
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
+	TObjectPtr<UAnimMontage> DeathMontage;
 	
 	UPROPERTY(EditAnywhere, Category = Sounds)
 	TObjectPtr<class USoundBase> HitSound;
@@ -41,6 +65,27 @@ private:
 	UPROPERTY(EditAnywhere, Category = VisualEffects)
 	TObjectPtr<class UParticleSystem> HitParticle;
 
+	UPROPERTY()
+	TObjectPtr<class AActor> CombatTarget;
+
+	UPROPERTY(EditAnywhere)
+	double CombatRadius = 500.f;
+	UPROPERTY(EditAnywhere)
+	double PatrolRadius = 200.f;
+
+	/**
+	 * Navigation
+	 */
+	UPROPERTY()
+	TObjectPtr<class AAIController> EnemyController;
+	
+	//current patrol target
+	UPROPERTY(EditInstanceOnly, Category="AI Navigation")
+	TObjectPtr<AActor> CurrentPatrolTarget;
+
+	//current patrol target
+	UPROPERTY(EditInstanceOnly, Category="AI Navigation")
+	TArray<TObjectPtr<AActor>> PatrolTargets;
 public:
 	
 };
