@@ -9,6 +9,7 @@
 #include "Enemy.generated.h"
 
 enum class EDeathPose : uint8;
+enum class EEnemyState : uint8;
 
 UCLASS()
 class SLASH_API AEnemy : public ACharacter, public IHitInterface
@@ -30,26 +31,37 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
-	FTimerHandle BeginPatrolTimer;
+	
 	void BeginPatrolling();
 
 	void Die();
+	bool InTargetRange(AActor* Target, double Radius);
+	void MoveToTarget(AActor* Target);
+	AActor* ChoosePatrolTarget();
+	UFUNCTION()
+	void PawnSeen(APawn* SeenPawn);
 
 	/**
 	 * Play Montage Methods
 	 */
 	void PlayHitReactMontage(const FName SectionName);
-	bool InTargetRange(AActor* Target, double Radius);
+	
 
 	UPROPERTY(BlueprintReadOnly)
 	EDeathPose DeathPose = EDeathPose::EDP_Alive;
+	UPROPERTY(BlueprintReadOnly)
+	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
 
 private:
+	/**
+	 * Components
+	 */
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UAttributeComponent> Attributes;
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UHealthBarComponent> HealthBarWidget;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UPawnSensingComponent> PawnSensing;
 	
 	/**
 	 * Animation Montages
@@ -69,7 +81,9 @@ private:
 	TObjectPtr<class AActor> CombatTarget;
 
 	UPROPERTY(EditAnywhere)
-	double CombatRadius = 500.f;
+	double CombatRadius = 800.f;
+	UPROPERTY(EditAnywhere)
+	double AttackRadius = 150.f;
 	UPROPERTY(EditAnywhere)
 	double PatrolRadius = 200.f;
 
@@ -86,6 +100,12 @@ private:
 	//current patrol target
 	UPROPERTY(EditInstanceOnly, Category="AI Navigation")
 	TArray<TObjectPtr<AActor>> PatrolTargets;
+
+	FTimerHandle PatrolTimer;
+	void PatrolTimerFinished();
+	void CheckCombatTarget();
+	void CheckPatrolTarget();
+
 public:
 	
 };
