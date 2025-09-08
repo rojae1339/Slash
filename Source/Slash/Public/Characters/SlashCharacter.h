@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BaseCharacter.h"
 #include "CharacterType.h"
-#include "GameFramework/Character.h"
 #include "SlashCharacter.generated.h"
 
 struct FInputActionValue;
@@ -12,7 +12,7 @@ class UInputAction;
 class AItem;
 
 UCLASS()
-class SLASH_API ASlashCharacter : public ACharacter
+class SLASH_API ASlashCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
@@ -21,8 +21,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION(BlueprintCallable)
-	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled);
+	
 
 protected:
 	virtual void BeginPlay() override;
@@ -47,15 +46,14 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Equip(const FInputActionValue& Value);
-	void Attack(const FInputActionValue& Value);
+	virtual void Attack() override;
 
 	/**
 	 * Play Montage Methods
 	 */
-	void PlayAttackMontage();
-	UFUNCTION(BlueprintCallable)
-	void AttackEnd();
-	bool CanAttack();
+	virtual void PlayAttackMontage() override;
+	virtual void AttackEnd() override;
+	virtual bool CanAttack() override;
 	void PlayEquipMontage(FName SectionName);
 	bool CanDisarm();
 	bool CanArm();
@@ -75,14 +73,7 @@ private:
 	TObjectPtr<class UCameraComponent> Camera;
 	UPROPERTY(VisibleInstanceOnly)
 	TObjectPtr<AItem> OverlappingItem;
-	UPROPERTY(VisibleAnywhere, Category=Weapon)
-	TObjectPtr<class AWeapon> EquippedWeapon;
-
-	/**
-	 * Animation Montages
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = Montages)
-	TObjectPtr<UAnimMontage> AttackMontage;
+	
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	TObjectPtr<UAnimMontage> EquipMontage;
 	

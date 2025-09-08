@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Characters/BaseCharacter.h"
 #include "Characters/CharacterType.h"
-#include "GameFramework/Character.h"
 #include "Interfaces/HitInterface.h"
 #include "Enemy.generated.h"
 
@@ -12,15 +12,13 @@ enum class EDeathPose : uint8;
 enum class EEnemyState : uint8;
 
 UCLASS()
-class SLASH_API AEnemy : public ACharacter, public IHitInterface
+class SLASH_API AEnemy : public ABaseCharacter
 {
 	GENERATED_BODY()
 
 public:
 	AEnemy();
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	void DirectionalHitReact(const FVector& ImpactPoint);
 
 	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
 
@@ -28,62 +26,50 @@ public:
 		const FDamageEvent& DamageEvent,
 		AController* EventInstigator,
 		AActor* DamageCauser) override;
+public:
+	virtual void Destroyed() override;
 
 protected:
+	
 	virtual void BeginPlay() override;
 	
 	void BeginPatrolling();
 
-	void Die();
+	virtual void Die() override;
 	bool InTargetRange(AActor* Target, double Radius);
 	void MoveToTarget(AActor* Target);
 	AActor* ChoosePatrolTarget();
+	virtual void Attack() override;
+	virtual void PlayAttackMontage() override;
+	virtual bool CanAttack() override;
+	virtual void HandleDamage(float DamageAmount) override;
+
+	
 	UFUNCTION()
 	void PawnSeen(APawn* SeenPawn);
 
-	/**
-	 * Play Montage Methods
-	 */
-	void PlayHitReactMontage(const FName SectionName);
-	
-
 	UPROPERTY(BlueprintReadOnly)
-	EDeathPose DeathPose = EDeathPose::EDP_Alive;
+	EDeathPose DeathPose;
 	UPROPERTY(BlueprintReadOnly)
 	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
 
 private:
-	/**
-	 * Components
-	 */
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<class UAttributeComponent> Attributes;
+	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UHealthBarComponent> HealthBarWidget;
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UPawnSensingComponent> PawnSensing;
-	
-	/**
-	 * Animation Montages
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = Montages)
-	TObjectPtr<UAnimMontage> HitReactMontage;
-	UPROPERTY(EditDefaultsOnly, Category = Montages)
-	TObjectPtr<UAnimMontage> DeathMontage;
-	
-	UPROPERTY(EditAnywhere, Category = Sounds)
-	TObjectPtr<class USoundBase> HitSound;
 
-	UPROPERTY(EditAnywhere, Category = VisualEffects)
-	TObjectPtr<class UParticleSystem> HitParticle;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AWeapon> WeaponClass;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	TObjectPtr<class AActor> CombatTarget;
 
 	UPROPERTY(EditAnywhere)
 	double CombatRadius = 800.f;
 	UPROPERTY(EditAnywhere)
-	double AttackRadius = 150.f;
+	double AttackRadius = 160.f;
 	UPROPERTY(EditAnywhere)
 	double PatrolRadius = 200.f;
 
@@ -105,6 +91,42 @@ private:
 	void PatrolTimerFinished();
 	void CheckCombatTarget();
 	void CheckPatrolTarget();
+
+	/**
+	 * AI Behavior
+	 */
+	void HideHealthBar();
+	void ShowHealthBar();
+	void LoseInterest();
+	void StartPatrolling();
+	void ChaseTarget();
+	bool IsOutsideCombatRadius();
+	bool IsOutsideAttackRadius();
+	bool IsInsideAttackRadius();
+	bool IsChasing();
+	bool IsAttacking();
+	bool IsDead();
+	bool IsEngaged();
+	void ClearPatrolTimer();
+	
+
+	/**
+	 * Combat
+	 */
+	void StartAttackTimer();
+	void ClearAttackTimer();
+	
+	FTimerHandle AttackTimer;
+	
+	UPROPERTY(EditAnywhere, Category=Combat)
+	float AttackMin = 0.5f;
+	UPROPERTY(EditAnywhere, Category=Combat)
+	float AttackMax = 1.f;
+	
+	UPROPERTY(EditAnywhere, Category=Combaty)
+	float PatrollingSpeed = 125.f;
+	UPROPERTY(EditAnywhere, Category=Combaty)
+	float ChasingSpeed = 300.f;
 
 public:
 	
